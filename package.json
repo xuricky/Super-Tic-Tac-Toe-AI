@@ -1,0 +1,30 @@
+{
+  "name": "super-tic-tac-toe-ai",
+  "version": "1.0.0",
+  "description": "it's a graduation project - Super-Tic-Tac-Toe/AI",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xuricky/Super-Tic-Tac-Toe-AI.git"
+  },
+  "author": "xuricky",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/xuricky/Super-Tic-Tac-Toe-AI/issues"
+  },
+  "homepage": "https://github.com/xuricky/Super-Tic-Tac-Toe-AI#readme",
+  "dependencies": {
+    "@types/react": "^16.8.6",
+    "@types/react-dom": "^16.8.2",
+    "react": "^16.8.3",
+    "react-dom": "^16.8.3"
+  },
+  "devDependencies": {
+    "awesome-typescript-loader": "^5.2.1",
+    "source-map-loader": "^0.2.4",
+    "typescript": "^3.3.3333"
+  }
+}
