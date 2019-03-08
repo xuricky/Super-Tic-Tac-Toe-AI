@@ -1,4 +1,7 @@
 import * as React from 'react';
+import { Square } from './square';
+import { TicTacToe } from './tic-tac-toe';
+import { SuperTicTacToe } from './super-tic-tac-toe';
 
 export interface testProps {
     compiler: string,
@@ -7,6 +10,7 @@ export interface testProps {
 
 export class Test extends React.Component<testProps, {}> {
     render() {
-        return <h1>Test from {this.props.compiler} and {this.props.framework}!</h1>
+        return <SuperTicTacToe></SuperTicTacToe>
     }
+
 }

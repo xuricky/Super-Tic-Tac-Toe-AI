@@ -13,4 +13,6 @@ export namespace ColorOption {
     export const primaryColor = ColorEnum.green;
     export const secondColor = ColorEnum.orange;
     export const warnColor = ColorEnum.red;
+    export const XFillColor = ColorEnum.red;
+    export const OFillColor = ColorEnum.orange;
 }

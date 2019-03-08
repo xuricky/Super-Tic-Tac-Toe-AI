@@ -1,4 +1,5 @@
 import * as React from 'react';
+const squareCss = require('../ui/css/square.css');
 export interface SquareProps{
     index: number,
     handleClick(): void,
@@ -10,16 +11,21 @@ export class Square extends React.Component<SquareProps> {
     }
 
     render() {
-        return <div onClick={this.props.handleClick.bind(this)}
+        return (
+            <button onClick={this.props.handleClick.bind(this)}
                     onMouseEnter={this.handleMouseEnter}
-                    onMouseLeave={this.handleMouseLeave} />
+                    onMouseLeave={this.handleMouseLeave}
+                    className={squareCss.button}>
+                    
+            </button>
+        )
     }
 
     handleMouseEnter() {
-
+        console.log('mouseEnter');
     }
 
     handleMouseLeave() {
-        
+        console.log('mouseLeave');
     }
 }

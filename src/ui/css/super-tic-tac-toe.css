@@ -1,10 +1,10 @@
-:local(.board) {
+:local(.global-board) {
     display: flex;
     flex-direction: row;
-    width: 99px;
+    width: 300px;
 }
 
-:local(.board-row:after) {
+:local(.local-board:after) {
     clear: both;
     content: "";
     display: table;
