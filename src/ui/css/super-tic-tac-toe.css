@@ -19,7 +19,15 @@
     box-sizing: border-box;
     margin-right: -1px;
     margin-bottom: -1px;
-    z-index: 10;
+}
+
+:local(.nomask) {
+    width: 100%;
+    position: relative;
+    border:1px solid chartreuse;
+    box-sizing: border-box;
+    margin-right: -1px;
+    margin-bottom: -1px;
 }
 
 :local(.text) {

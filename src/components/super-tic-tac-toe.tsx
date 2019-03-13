@@ -12,6 +12,9 @@ export class SuperTicTacToe extends React.Component<SuperTicTacToeProps> {
     constructor(props: SuperTicTacToeProps) {
         super(props);
         this.action = Action.getInstance();
+        this.state = {
+            action: this.action,
+        }
     }
 
     render() {
@@ -42,13 +45,18 @@ export class SuperTicTacToe extends React.Component<SuperTicTacToeProps> {
                 <div className={SuperTicTacToeCss.text}>
                     {i % 2 === 0 ? 'X' : 'O'}
                 </div>
-                <TicTacToe index={i}></TicTacToe>
+                <TicTacToe handleSquareClick={(index: number)=> this._handleClick([i, index])}
+                            handleSquareMouseEnter={(index: number) => this._handleMouseEnter([i, index])}></TicTacToe>
             </div>
         )
     }
 
-    _handleClick() {
-        
+    _handleClick(id: number[]) {
+        console.log(id);
+    }
+
+    _handleMouseEnter(id: number[]) {
+        console.log(id);
     }
 }
 

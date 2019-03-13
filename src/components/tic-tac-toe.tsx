@@ -2,7 +2,8 @@ import * as React from 'react';
 import { Square } from './square';
 const TicTacToeCss = require('../ui/css/tic-tac-toe.css');
 export interface TicTacToeProps {
-    index: number;
+    handleSquareClick(i: number): void,
+    handleSquareMouseEnter(i: number): void,
 }
 
 export class TicTacToe extends React.Component<TicTacToeProps> {
@@ -37,11 +38,7 @@ export class TicTacToe extends React.Component<TicTacToeProps> {
     }
 
     private _renderSquare(index: number) {
-        return <Square index={index}
-                        handleClick={() => this.handleSquareClick(index)}></Square>   
-    }
-
-    private handleSquareClick(i: number) {
-        console.log(i);
+        return <Square handleClick={() => this.props.handleSquareClick(index)}
+                       handleMouseEnter={() => this.props.handleSquareMouseEnter(index)}></Square>   
     }
 }
