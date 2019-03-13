@@ -7,8 +7,14 @@ interface ActionData{
     OData: number[][],
 }
 
+interface UIData {
+    texts: string[];
+    masks: boolean[];
+    premasks: boolean[];
+}
+
 export class Action {
-    public static INSTANCE = new Action();
+    private static INSTANCE = new Action();
     public static getInstance() {
         return this.INSTANCE;
     }
@@ -16,6 +22,7 @@ export class Action {
     private XFillColor: string;
     private OFillColor: string;
     private historyActionDatas: ActionData[];
+    private uiData: UIData;
     constructor() {
         this._initData();
         this.XFillColor = ColorOption.XFillColor;
@@ -36,11 +43,20 @@ export class Action {
             allData: [],
             XData: [],
             OData: [],
+        };
+        this.uiData = {
+            texts: Array(9).fill(null),
+            masks: Array(9).fill(true),
+            premasks: Array(9).fill(false),
         }
     }
 
     public getActionData() {
         return this.actionData;
+    }
+
+    public getUIData() {
+        return this.uiData;
     }
 
     public getNextValue(): string {

@@ -1,12 +1,18 @@
 import * as React from 'react';
 import { TicTacToe } from './tic-tac-toe';
 const SuperTicTacToeCss = require('../ui/css/super-tic-tac-toe.css');
+import { Action } from '../common/action';
 
 export interface SuperTicTacToeProps {
-    
+    [propname: string]: any;
 }
 
-export class SuperTicTacToe extends React.Component {
+export class SuperTicTacToe extends React.Component<SuperTicTacToeProps> {
+    private action: Action;
+    constructor(props: SuperTicTacToeProps) {
+        super(props);
+        this.action = Action.getInstance();
+    }
 
     render() {
         return (
@@ -31,7 +37,14 @@ export class SuperTicTacToe extends React.Component {
     }
 
     _renderTicTacToe(i: number) {
-        return <TicTacToe index={i}></TicTacToe>
+        return (
+            <div className={SuperTicTacToeCss.mask}>
+                <div className={SuperTicTacToeCss.text}>
+                    {i % 2 === 0 ? 'X' : 'O'}
+                </div>
+                <TicTacToe index={i}></TicTacToe>
+            </div>
+        )
     }
 
     _handleClick() {

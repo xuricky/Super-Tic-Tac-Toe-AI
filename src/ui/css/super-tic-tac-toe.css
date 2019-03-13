@@ -9,3 +9,23 @@
     content: "";
     display: table;
 }
+
+:local(.mask) {
+    width: 100%;
+    opacity: 0.3;
+    pointer-events: none;
+    position: relative;
+    border:1px solid chartreuse;
+    box-sizing: border-box;
+    margin-right: -1px;
+    margin-bottom: -1px;
+    z-index: 10;
+}
+
+:local(.text) {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    font-size: 66px;
+}
