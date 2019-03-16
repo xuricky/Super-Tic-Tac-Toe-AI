@@ -1,3 +1,9 @@
+:local(.title) {
+    width: 300px;
+    text-align: center;
+    margin: 10px;
+}
+
 :local(.global-board) {
     display: flex;
     flex-direction: row;
