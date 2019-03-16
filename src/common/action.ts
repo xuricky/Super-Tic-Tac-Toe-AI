@@ -118,8 +118,13 @@ export class Action {
         return Object.assign({}, data);
     }
     // 将ActionData转化为UIData
-    private transferActionDataToUIData() {
-        const xData = this.getActionData().XData;
-        const OData = this.getActionData().OData;
+    private transferActionDataToUIData(actionData: ActionData) {
+        const xData = actionData.XData.sort(this.compute);
+        const OData = actionData.OData.sort(this.compute);
+    }
+
+    // sort function
+    private compute(arr1: number[], arr2: number[]) {
+        return arr1[0] - arr2[0] || arr1[1] - arr2[1];
     }
 }
