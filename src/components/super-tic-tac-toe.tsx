@@ -109,9 +109,5 @@ export class SuperTicTacToe extends React.Component<SuperTicTacToeProps, SuperTi
             action: this.state.action,
         });
     }
-
-    _getValueFromId(arr: any[][], id: number[]) {
-        return arr[id[0]][id[1]];
-    }
 }
 

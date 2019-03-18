@@ -207,12 +207,26 @@ export class Action {
      * @description 将ActionData转化为UIData
      */
     private _transferActionDataToUIData(actionData: ActionData) {
-        const xData = actionData.XData.sort(this._compare);
-        const OData = actionData.OData.sort(this._compare);
+        let xData = actionData.XData.sort(this._compare);
+        let OData = actionData.OData.sort(this._compare);
         let xIndexs = this._getSucIndexArray(xData);
         let OIndexs = this._getSucIndexArray(OData);
-        if (xIndexs.length > 0 || OIndexs.length > 0) {
-            console.log(`xIndexs:${xIndexs}--OIndexs${OIndexs}`);
+        let uiData = this.getUIData();
+        if (this._calculateWinner(xIndexs)) {
+            alert('X IS WINNER!');
+            uiData.masks = new Array(9).fill(true);
+        } else if (this._calculateWinner(OIndexs)){
+            alert('O IS WINNER!');
+            uiData.masks = new Array(9).fill(true);
+        } else {
+            for (let xi of xIndexs) {
+                uiData.texts[xi] = 'X';
+                uiData.masks[xi] = true; 
+            }
+            for (let oi of OIndexs) {
+                uiData.texts[oi] = 'O';
+                uiData.masks[oi] = true;
+            }
         }
     }
 
@@ -260,25 +274,40 @@ export class Action {
     private _getSucIndexArray(data: number[][]): number[] {
         let suc: number[] = [];
         let arr3d: number[][][] = [];
-        let count = 0;
         data.forEach((id) => {
-            if (!count || count !== id[0]) {
-                arr3d.push([id]);
-                count = id[0];
+            let arr2d = arr3d.find(_arr2d => _arr2d[0][0] === id[0]);
+            if (arr2d) {
+                arr2d.push(id);
             } else {
-                arr3d[arr3d.length - 1].push(id);
+                arr3d.push([id]);
             }
         })
         arr3d.forEach((arr2d) => {
-            for (let suc of this.sucArr) {
-                if (arr2d.find(arr => arr[1] === suc[0]) &&
-                    arr2d.find(arr => arr[1] === suc[1]) &&
-                    arr2d.find(arr => arr[1] === suc[2])) {
+            for (let _suc of this.sucArr) {
+                if (arr2d.find(arr => arr[1] === _suc[0]) &&
+                    arr2d.find(arr => arr[1] === _suc[1]) &&
+                    arr2d.find(arr => arr[1] === _suc[2])) {
                         suc.push(arr2d[0][0]);
                         break;
                     }
             }
         })
         return suc;
+    }
+
+    /**
+     * @description 计算胜者
+     */
+    private _calculateWinner(sucIndexs: number[]): boolean {
+        let win = false;
+        for (let _suc of this.sucArr) {
+            if (sucIndexs.find(n => n === _suc[0]) &&
+                sucIndexs.find(n => n === _suc[1]) &&
+                sucIndexs.find(n => n === _suc[2])) {
+                    win = true;
+                    break;
+                }
+        }
+        return win;
     }
 }
