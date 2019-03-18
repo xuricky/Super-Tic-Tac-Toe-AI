@@ -9,6 +9,7 @@ interface SuperTicTacToeProps {
 }
 interface SuperTicTacToeState{
     action: Action;
+    gameStart: boolean;
 }
 
 export class SuperTicTacToe extends React.Component<SuperTicTacToeProps, SuperTicTacToeState> {
@@ -18,6 +19,7 @@ export class SuperTicTacToe extends React.Component<SuperTicTacToeProps, SuperTi
         this.action = Action.getInstance();
         this.state= {
             action: this.action,
+            gameStart: true
         }
     }
 
@@ -25,7 +27,7 @@ export class SuperTicTacToe extends React.Component<SuperTicTacToeProps, SuperTi
         const action = this.state.action;
         return (
             <div>
-                <div className={SuperTicTacToeCss.title}>{`Next Turn to ${action.getNextValue()}}`}</div>
+                <div className={SuperTicTacToeCss.title}>{`Next Turn to ${action.getNextValue()}`}</div>
                 <div className={SuperTicTacToeCss['global-board']}>
                     <div className={SuperTicTacToeCss['local-board']}>
                         {this._renderTicTacToe(0)}
@@ -45,7 +47,8 @@ export class SuperTicTacToe extends React.Component<SuperTicTacToeProps, SuperTi
                 </div>
                 <GameInfo handleGameStart={() => this._handleGameStart()}
                           handleGameOver={() => this._handleGameOver()}
-                          handleBack={() => this._handleBack()}></GameInfo>    
+                          handleBack={() => this._handleBack()}
+                          gameStart={this.state.gameStart}></GameInfo>    
             </div>
         )
     }
@@ -59,32 +62,56 @@ export class SuperTicTacToe extends React.Component<SuperTicTacToeProps, SuperTi
                     {UIData.texts[i]}
                 </div>
                 <TicTacToe handleSquareClick={(index: number)=> this._handleClick([i, index])}
-                            handleSquareMouseEnter={(index: number) => this._handleMouseEnter([i, index])}>
+                            handleSquareMouseEnter={(index: number) => this._handleMouseEnter([i, index])}
+                            texts={UIData.squareTexts[i]}>
                 </TicTacToe>
             </div>
         )
     }
 
     _handleClick(id: number[]) {
-        console.log(id);
+        // console.log(id);
+        let action = this.state.action;
+        let uiData = action.getUIData();
+        let texts = uiData.squareTexts;
+        if (!action.getValueFromID(texts, id)) {
+            action.pushActionData(id);
+            this.setState({
+                action: this.state.action,
+            });
+        }
     }
 
     _handleMouseEnter(id: number[]) {
-        console.log(id);
+        // console.log(id);
     }
 
     _handleGameStart(){
         this.action.initStartData();
-        this.setState({action: this.action});
+        this.setState({
+            action: this.action,
+            gameStart: !this.state.gameStart,
+        });
     }
 
     _handleGameOver() {
         this.action.clearActionData();
-        this.setState({action: this.action});
+        this.setState({
+            action: this.action,
+            gameStart: !this.state.gameStart,
+        });
     }
 
     _handleBack() {
-        
+        let action = this.state.action;
+        action.popActionData();
+        this.setState({
+            action: this.state.action,
+        });
+    }
+
+    _getValueFromId(arr: any[][], id: number[]) {
+        return arr[id[0]][id[1]];
     }
 }
 
