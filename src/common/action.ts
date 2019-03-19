@@ -152,7 +152,7 @@ export class Action {
     }
 
     /**
-     * @description PUSH DATA
+     * @description PUSH DATA, Handle click events
      */
     public pushActionData(data: number[]) {
         let actionData = this.getActionData();
@@ -171,6 +171,7 @@ export class Action {
         actionData.xIsNext = !actionData.xIsNext;
         actionData.allData.push(data);
         this._transferActionDataToUIData(actionData);
+        this._handleNextStepData(data);
     }
 
     /**
@@ -213,19 +214,21 @@ export class Action {
         let OIndexs = this._getSucIndexArray(OData);
         let uiData = this.getUIData();
         if (this._calculateWinner(xIndexs)) {
-            alert('X IS WINNER!');
             uiData.masks = new Array(9).fill(true);
         } else if (this._calculateWinner(OIndexs)){
-            alert('O IS WINNER!');
             uiData.masks = new Array(9).fill(true);
         } else {
-            for (let xi of xIndexs) {
-                uiData.texts[xi] = 'X';
-                uiData.masks[xi] = true; 
-            }
-            for (let oi of OIndexs) {
-                uiData.texts[oi] = 'O';
-                uiData.masks[oi] = true;
+            for (let i = 0; i < uiData.masks.length; i++) {
+                if (xIndexs.includes(i) || OIndexs.includes(i)) {
+                    uiData.masks[i] = true;
+                    if (xIndexs.includes(i)) {
+                        uiData.texts[i] = 'X';
+                    } else if (OIndexs.includes(i)) {
+                        uiData.texts[i] = 'O';
+                    }
+                } else {
+                    uiData.masks[i] = false;
+                }
             }
         }
     }
@@ -309,5 +312,36 @@ export class Action {
                 }
         }
         return win;
+    }
+
+    /**
+     * @description 获得胜者
+     */
+    public getWinner(): string {
+        let winner = null;
+        let actionData = this.getActionData();
+        let xData = actionData.XData.sort(this._compare);
+        let OData = actionData.OData.sort(this._compare);
+        let xIndexs = this._getSucIndexArray(xData);
+        let OIndexs = this._getSucIndexArray(OData);
+        if (this._calculateWinner(xIndexs)) {
+            winner = 'X';
+        } else if (this._calculateWinner(OIndexs)) {
+            winner = 'O';
+        }
+        return winner;
+    }
+
+    /**
+     *@description 下一步的数据处理 
+     */
+    private _handleNextStepData(id: number[]) {
+        let uiData = this.getUIData();
+        if (!this.getWinner()) {
+            let masks = uiData.masks;
+            if (!masks[id[1]]) {
+                uiData.masks = masks.map((mask, i) => i !== id[1] && (mask = true));
+            }
+        }
     }
 }
