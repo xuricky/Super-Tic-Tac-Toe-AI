@@ -175,6 +175,11 @@ export class Action {
     }
 
     /**
+     * @description prepare push data, hanle mouseenter events -- to do
+     */
+    public prePushActionData(data: number[]) {}
+
+    /**
      * @description POP DATA
      */
     public popActionData() {
@@ -344,4 +349,5 @@ export class Action {
             }
         }
     }
+
 }
