@@ -183,7 +183,7 @@ export class Action {
      * @description POP DATA
      */
     public popActionData() {
-        this.resetActionData(this.historyDatas.length - 1);
+        this.resetActionData(this.historyDatas.length - 2);
     }
     
     /**
@@ -217,6 +217,7 @@ export class Action {
         let OData = actionData.OData.sort(this._compare);
         let xIndexs = this._getSucIndexArray(xData);
         let OIndexs = this._getSucIndexArray(OData);
+        let fIndexs = this._getFullUpSquareIndexs();
         let uiData = this.getUIData();
         if (this._calculateWinner(xIndexs)) {
             uiData.masks = new Array(9).fill(true);
@@ -224,7 +225,7 @@ export class Action {
             uiData.masks = new Array(9).fill(true);
         } else {
             for (let i = 0; i < uiData.masks.length; i++) {
-                if (xIndexs.includes(i) || OIndexs.includes(i)) {
+                if (xIndexs.includes(i) || OIndexs.includes(i) || fIndexs.includes(i)) {
                     uiData.masks[i] = true;
                     if (xIndexs.includes(i)) {
                         uiData.texts[i] = 'X';
@@ -350,4 +351,22 @@ export class Action {
         }
     }
 
+    /**
+     * @description 填充满格子的Index
+     */
+    private _getFullUpSquareIndexs(): number[] {
+        let indexs: number[] = [];
+        let allData = this.actionData.allData;
+        let arr3d: number[][][] = [];
+        allData.forEach((id) => {
+            let arr2d = arr3d.find(_arr2d => _arr2d[0][0] === id[0]);
+            if (arr2d) {
+                arr2d.push(id);
+            } else {
+                arr3d.push([id]);
+            }
+        })
+        arr3d.forEach(arr2d => {if (arr2d.length === 9) indexs.push(arr2d[0][0])});
+        return indexs;
+    }
 }
