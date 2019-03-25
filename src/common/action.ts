@@ -369,4 +369,19 @@ export class Action {
         arr3d.forEach(arr2d => {if (arr2d.length === 9) indexs.push(arr2d[0][0])});
         return indexs;
     }
+
+    public getAvailablePos(id: number[]): number[][] {
+        let availablePos: number[][] = [];
+        let nomaskIndexs: number[] = [];
+        this.getUIData().masks.forEach((m, i) => !m && nomaskIndexs.push(i));
+        let allData = this.getActionData().allData;
+        for (let i = 0; i < nomaskIndexs.length; i++) {
+            for (let j = 0; j < 9; j++) {
+                if (!allData.find((_id) => _id[0] === i && _id[1] === j)) {
+                    availablePos.push([i, j]);
+                }
+            }
+        }
+        return availablePos;
+    }
 }
