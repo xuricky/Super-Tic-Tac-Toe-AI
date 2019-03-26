@@ -1,4 +1,6 @@
 import { Action } from '../common/action';
+import {  GlobalBoard } from '../common/globalboard';
+import { State } from '../common/localboard';
 
 enum Position {
     center,
@@ -50,6 +52,10 @@ export class MCTS {
     private _getAction(): Action {
         return Action.getInstance();
     }
+
+    private _getGlobalBoard(): GlobalBoard {
+        return GlobalBoard.getInstance();
+    }
     
     private _evaluate(): number {
         let evaluation = 0;
@@ -75,19 +81,23 @@ export class MCTS {
         return Strategy.minimax;
     }
 
-    private _createChild() {
-        const now = new Date().getTime();
-        this.hasChildren = true;
-        let strategy = this._getStrategy();
-        let action = this._getAction();
-        let availablePos = action.getAvailablePos(this.move);
-        if (strategy === Strategy.random) {
+    // private _createChild() {
+    //     const now = new Date().getTime();
+    //     this.hasChildren = true;
+    //     let strategy = this._getStrategy();
+    //     let action = this._getAction();
+    //     let availablePos = action.getAvailablePos(this.move);
+    //     if (strategy === Strategy.random) {
             
-        } else {
-            for (let i = 0; i < availablePos.length && new Date().getTime() - now < LimitCondition.cycle * 1000; i++) {
-                let MCTSNode = new MCTS(this, !this.isAITurn, this.move);
-                this._addChild(MCTSNode);
-            }
-        }
+    //     } else {
+    //         for (let i = 0; i < availablePos.length && new Date().getTime() - now < LimitCondition.cycle * 1000; i++) {
+    //             let MCTSNode = new MCTS(this, !this.isAITurn, this.move);
+    //             this._addChild(MCTSNode);
+    //         }
+    //     }
+    // }
+
+    public findBestMove(id: number[], isAITurn: boolean) {
+        
     }
 }

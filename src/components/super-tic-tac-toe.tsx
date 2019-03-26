@@ -1,33 +1,39 @@
 import * as React from 'react';
 import { TicTacToe } from './tic-tac-toe';
 const SuperTicTacToeCss = require('../ui/css/super-tic-tac-toe.css');
-import { Action } from '../common/action';
 import { GameInfo } from './gameInfo';
+import { GlobalBoard } from '../common/globalboard';
+import { Type, State } from '../common/localboard';
 
 interface SuperTicTacToeProps {
     [propname: string]: any;
 }
 interface SuperTicTacToeState{
-    action: Action;
+    gb: GlobalBoard;
     gameStart: boolean;
+    config: any;
 }
 
 export class SuperTicTacToe extends React.Component<SuperTicTacToeProps, SuperTicTacToeState> {
-    private action: Action;
+    private gb: GlobalBoard;
     constructor(props: SuperTicTacToeProps) {
         super(props);
-        this.action = Action.getInstance();
-        this.state= {
-            action: this.action,
-            gameStart: true
+        this.gb = GlobalBoard.getInstance();
+        this.state = {
+            gb: this.gb,
+            gameStart: true,
+            config: {
+                [Type.HUMAN]: 'X',
+                [Type.AI]: 'O'
+            }
         }
     }
 
     render() {
-        const action = this.state.action;
+        const gb = this.state.gb;
         return (
             <div>
-                <div className={SuperTicTacToeCss.title}>{`Next Turn to ${action.getNextValue()}`}</div>
+                <div className={SuperTicTacToeCss.title}>{`Next Turn to ${gb.getGlobalData().AIIsNext ? this.state.config[Type.AI] : this.state.config[Type.HUMAN]}`}</div>
                 <div className={SuperTicTacToeCss['global-board']}>
                     <div className={SuperTicTacToeCss['local-board']}>
                         {this._renderTicTacToe(0)}
@@ -54,32 +60,38 @@ export class SuperTicTacToe extends React.Component<SuperTicTacToeProps, SuperTi
     }
 
     _renderTicTacToe(i: number) {
-        const action = this.state.action;
-        const UIData = action.getUIData();
+        const gb = this.state.gb;
+        let gbData = gb.getGlobalData();
+        let data = gbData.data[i];
+        let textData = data.map(d => d === Type.AI ? this.state.config[Type.AI] :
+                                    d === Type.HUMAN ? this.state.config[Type.HUMAN] : null);
+        let global = gb.getGlobal();
+        let virtualData = global[i].getVirtualData();
         return (
-            <div className={UIData.masks[i] && !UIData.premasks[i] ? SuperTicTacToeCss.mask : SuperTicTacToeCss.nomask}>
+            <div className={gbData.masks[i] ? SuperTicTacToeCss.mask : SuperTicTacToeCss.nomask}>
                 <div className={SuperTicTacToeCss.text}>
-                    {UIData.texts[i]}
+                    {virtualData.state === State.ai_win ? this.state.config[Type.AI] :
+                    virtualData.state === State.human_win ? this.state.config[Type.HUMAN] : null}
                 </div>
                 <TicTacToe handleSquareClick={(index: number)=> this._handleClick([i, index])}
                             handleSquareMouseEnter={(index: number) => this._handleMouseEnter([i, index])}
-                            texts={UIData.squareTexts[i]}>
+                            texts={textData}>
                 </TicTacToe>
             </div>
         )
     }
 
     _handleClick(id: number[]) {
-        // console.log(id);
-        let action = this.state.action;
-        let uiData = action.getUIData();
-        let texts = uiData.squareTexts;
-        if (!action.getValueFromID(texts, id)) {
-            action.pushActionData(id);
-            this.setState({
-                action: this.state.action,
-            });
+        let gb = this.state.gb;
+        let gbData = gb.getGlobalData();
+        let data = gbData.data;
+        let aiIsNext = gbData.AIIsNext;
+        if (!data[id[0]][id[1]]) {
+            gb.pushData(id, aiIsNext);            
         }
+        this.setState({
+            gb: this.gb
+        })
     }
 
     _handleMouseEnter(id: number[]) {
@@ -87,26 +99,25 @@ export class SuperTicTacToe extends React.Component<SuperTicTacToeProps, SuperTi
     }
 
     _handleGameStart(){
-        this.action.initStartData();
+        this.gb.initStartData();
         this.setState({
-            action: this.action,
-            gameStart: !this.state.gameStart,
-        });
+            gb: this.gb,
+            gameStart: !this.state.gameStart
+        })
     }
 
     _handleGameOver() {
-        this.action.clearActionData();
+        this.gb.clearData();
         this.setState({
-            action: this.action,
+            gb: this.gb,
             gameStart: !this.state.gameStart,
         });
     }
 
     _handleBack() {
-        let action = this.state.action;
-        action.popActionData();
+        this.gb.popGlobal();
         this.setState({
-            action: this.state.action,
+            gb: this.gb,
         });
     }
 }

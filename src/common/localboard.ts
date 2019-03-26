@@ -23,7 +23,7 @@ export enum Type {
     HUMAN = -1
 }
 
-enum State {
+export enum State {
     ai_win,
     human_win,
     draw,
@@ -34,6 +34,7 @@ interface VirtualData {
     isActive: boolean,
     score: Score,
     data: number[],
+    state: State,
 }
 
 export class LocalBoard {
@@ -45,6 +46,7 @@ export class LocalBoard {
             isActive: true,
             score: null,
             data: Array(9).fill(null),
+            state: null,
         }
     }
     
@@ -58,6 +60,7 @@ export class LocalBoard {
         virtualData.data[index] = isAI ? Type.AI : Type.HUMAN;
         let res = this._getStateAndScore(this.virtualData.data);
         virtualData.score = res.score;
+        virtualData.state = res.state;
         res.state !== State.active && (virtualData.isActive = false);
     }
 
@@ -74,9 +77,9 @@ export class LocalBoard {
     }
 
     private _getStateAndScore(data: number[]): {state: State, score: Score} {
-        let state;
+        let state = State.active;
         let score = 0;
-        let win_possibile = false;
+        let notDraw = false;
         for (let arr of sucArr) {
             let dataArr = [data[arr[0]], data[arr[1]], data[arr[2]]];
             if (dataArr.every(n => n === Type.AI)) {
@@ -88,18 +91,17 @@ export class LocalBoard {
                 score = Score.human_win;
                 break;
             } else if (!dataArr.some(n => n === Type.AI) || !dataArr.some(n => n === Type.HUMAN)) {
-                win_possibile = true;
+                notDraw = true;
                 let effectData = dataArr.filter(n => n !== null);
                 if (effectData.length === 2) {
                     score += effectData.includes(Type.AI) ? 2 : -2;
                 }
             }
         }
-        if (state === null && !win_possibile) {
+        if (state === State.active && !notDraw) {
             state = State.draw;
             score = Score.draw;
-        } else if (state === null && win_possibile) {
-            state = State.active;
+        } else if (state === State.active && notDraw) {
             score += data.reduce((pre, cur) => (pre || 0) + (cur || 0), 0);
             score = score > Score.ai_almostwin ? Score.ai_almostwin : score < Score.human_almostwin ? Score.human_almostwin : score;
         }
