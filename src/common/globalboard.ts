@@ -1,11 +1,11 @@
 import { LocalBoard, sucArr, Score, Type, State } from './localboard';
 
 export enum GlobalScore {
-    ai_win = 100,
+    ai_win = Number.MAX_SAFE_INTEGER,
     ai_almostwin = 90,
     draw = 0,
     human_almostwin = -90,
-    human_win = -100,
+    human_win = Number.MIN_SAFE_INTEGER,
 }
 
 interface GlobalData {

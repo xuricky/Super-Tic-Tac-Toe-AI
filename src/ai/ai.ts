@@ -35,7 +35,6 @@ export class AI {
     constructor(isAITurn: boolean, move: number[]) {
         this.isAITurn = isAITurn;
         this.move = move;
-        this.position = this._getPosition();
         this.bestMove = null;
     }
 
@@ -43,8 +42,8 @@ export class AI {
         return GlobalBoard.getInstance();
     }
     
-    private _getPosition(): Position {
-        let position = this.move[1] === 4 ? Position.center : [0, 2, 6, 8].some(n => n === this.move[1]) ? Position.corner : Position.lave;
+    private _getPosition(id: number[]): Position {
+        let position = id[1] === 4 ? Position.center : [0, 2, 6, 8].some(n => n === id[1]) ? Position.corner : Position.lave;
         return position;
     }
 
@@ -69,7 +68,7 @@ export class AI {
             let maxScore = GlobalScore.human_win;
             for (let i = 0; i < availablePos.length; i++) {
                 let pos = availablePos[i];
-                gb.pushData(id, isAITurn);
+                gb.pushData(id, !isAITurn);
                 let score1 = this.getScore(pos, !isAITurn, depth + 1);
                 gb.deleteLastData();
                 if (score1 > maxScore) {
@@ -85,7 +84,7 @@ export class AI {
             let minScore = GlobalScore.ai_win;
             for (let i = 0; i < availablePos.length; i++) {
                 let pos = availablePos[i];
-                gb.pushData(id, isAITurn);
+                gb.pushData(id, !isAITurn);
                 let score2 = this.getScore(pos, !isAITurn, depth + 1);
                 gb.deleteLastData();
                 if (score2 < minScore) {
@@ -100,13 +99,87 @@ export class AI {
         }
     }
 
+    public findBestMove(id: number[], isAITurn: boolean, depth: number = 1) {
+        let gb = this._getGlobalBoard();
+        let state = gb.getState();
+        let score = gb.getScore();
+        if (state !== State.active || depth >= LimitCondition.depth) {
+            return score;
+        }
+        let availablePos = this._shuffle(gb.getAvailablePos(id));
+        if (isAITurn) {
+            let minScore =  GlobalScore.ai_win;
+            for (let i = 0; i < availablePos.length; i++) {
+                let pos = availablePos[i];
+                gb.pushData(id, !isAITurn);
+                let score = this.findBestMove(pos, !isAITurn, depth + 1);
+                gb.deleteLastData();
+                if (score < minScore) {
+                    minScore = score;
+                }
+            }
+            score += minScore;
+        } else {
+            let maxScore = GlobalScore.human_win;
+            for (let i = 0; i < availablePos.length; i++) {
+                let pos = availablePos[i];
+                gb.pushData(id, !isAITurn);
+                let score = this.findBestMove(pos, !isAITurn, depth + 1);
+                gb.deleteLastData();
+                if (score > maxScore) {
+                    maxScore = score;
+                    console.log(`maxscore is ${score}, and depth is ${depth}`);
+                    if (depth === 1) {
+                        this.bestMove = pos;
+                    }
+                }
+            }
+            score += maxScore;
+        }
+        return score;
+    }
+
+    private test(id: number[], isAITurn: boolean) {
+        let gb = this._getGlobalBoard();
+        let availablePos = this._shuffle(gb.getAvailablePos(id));
+        if (isAITurn) {
+            let minScore = GlobalScore.ai_win;
+            // let position;
+            for (let i = 0; i < availablePos.length; i++) {
+                let pos = availablePos[i];
+                gb.pushData(pos, !isAITurn);
+                let score = gb.getScore();
+                gb.deleteLastData();
+                if (score < minScore) {
+                    minScore = score;
+                    // position = this._getPosition(pos);
+                    this.bestMove = pos;
+                }
+            }
+        } else {
+            let maxScore = GlobalScore.human_win;
+            // let position;
+            for (let i = 0; i < availablePos.length; i++) {
+                let pos = availablePos[i];
+                gb.pushData(pos, !isAITurn);
+                let score = gb.getScore();
+                gb.deleteLastData();
+                if (score > maxScore) {
+                    maxScore = score;
+                    // position = this._getPosition(pos);
+                    this.bestMove = pos;
+                }
+            }
+        }
+    }
+
     private _shuffle(arr: any[]) {
         for (let i = arr.length, j; i; i--, j = Math.floor(Math.random() * i), [arr[i], arr[j]] = [arr[j], arr[i]]);
         return arr;
     }
 
     public getBestMove() {
-        this.getScore(this.move, this.isAITurn);
+        this.test(this.move, this.isAITurn);
         return this.bestMove;
     }
 }
