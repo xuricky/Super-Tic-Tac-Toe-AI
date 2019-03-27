@@ -23,6 +23,8 @@ export class GlobalBoard {
     private global: LocalBoard[];
     private historyData: any[];
     private globalData: GlobalData;
+    private score: GlobalScore;
+    private state: State;
     constructor() {
         this.clearData();
     }
@@ -47,6 +49,8 @@ export class GlobalBoard {
             masks: Array(9).fill(true)
         };
         this.historyData = [];
+        this.score = null;
+        this.state = null;
     }
 
     public initStartData() {
@@ -70,13 +74,23 @@ export class GlobalBoard {
         return this.global;
     }
 
+    public getScore() {
+        return this.score;
+    }
+
+    public getState() {
+        return this.state;
+    }
+
     private stashHistoryData() {
         let global = [];
         let globalData = JSON.parse(JSON.stringify(this.globalData));
         for (let local of this.global) {
             global.push(local.deepCloneVirtualData()); 
         }
-        this.historyData.push({global, globalData});
+        let score = this.score;
+        let state = this.state;
+        this.historyData.push({global, globalData, score, state});
     }
 
     public pushData(id: number[], isAI: boolean) {
@@ -85,6 +99,9 @@ export class GlobalBoard {
         this.globalData.AIIsNext = !this.globalData.AIIsNext;
         this._transferGlobalToGlobalData();
         this._handleNextStepData(id);
+        let res = this.getStateAndScore();
+        this.score = res.score;
+        this.state = res.state;
         // console.log(this.getStateAndScore().score);
         // console.log(this.getAvailablePos(id));
     }
@@ -122,7 +139,13 @@ export class GlobalBoard {
                 local.setVirtualData(leftDatas[0].global[i]);
             }
             this.setGlobalData(leftDatas[0].globalData);
+            this.score = leftDatas[0].score;
+            this.state = leftDatas[0].state;
         }
+    }
+
+    public deleteLastData() {
+        this.resetGlobal(this.historyData.length - 1);
     }
 
     /**
@@ -132,7 +155,7 @@ export class GlobalBoard {
         this.resetGlobal(this.historyData.length - 2);
     }
 
-    public getStateAndScore(): {state: State, score: Score}{
+    public getStateAndScore(): {state: State, score: GlobalScore} {
         let state = State.active;
         let score = 0;
         let notDraw = false;
