@@ -5,6 +5,7 @@ import { GameInfo } from './gameInfo';
 import { GlobalBoard } from '../common/globalboard';
 import { Type, State } from '../common/localboard';
 import { AI } from '../ai/ai';
+import { MctsNode } from '../ai/mcts';
 
 interface SuperTicTacToeProps {
     [propname: string]: any;
@@ -76,7 +77,7 @@ export class SuperTicTacToe extends React.Component<SuperTicTacToeProps, SuperTi
                     {virtualData.state === State.ai_win ? this.state.config[Type.AI] :
                     virtualData.state === State.human_win ? this.state.config[Type.HUMAN] : null}
                 </div>
-                <TicTacToe handleSquareClick={(index: number)=> this._handleClick([i, index], true)}
+                <TicTacToe handleSquareClick={(index: number)=> this._handleClick([i, index], false)}
                             handleSquareMouseEnter={(index: number) => this._handleMouseEnter([i, index])}
                             texts={textData}>
                 </TicTacToe>
@@ -100,10 +101,12 @@ export class SuperTicTacToe extends React.Component<SuperTicTacToeProps, SuperTi
                         endGame: true,
                     });
                 } 
-                else if (AITurn) {
-                    let move = this._getAIMove(false, id);
+                else if (!AITurn) {
+                    let mcts = new MctsNode(null, AITurn, id);
+                    let move = mcts.getBestMove();
+                    // let move = this._getAIMove(false, id);
                     // console.log('score' + move);
-                    this._handleClick(move, false);
+                    this._handleClick(move, !AITurn);
                 }
             });         
         }
