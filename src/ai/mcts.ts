@@ -2,13 +2,21 @@ import { GlobalBoard } from '../common/globalboard';
 import { State } from '../common/localboard';
 
 export class MctsNode {
+    // 父节点
     public parent: MctsNode;
+    // 是不是AI下
     public isAITurn: boolean;
+    // 移动点坐标
     public move: number[];
+    // 胜利次数
     public hits: number = 0;
+    // 失败次数
     public misses: number = 0;
+    // 尝试次数
     public totaltrials: number = 0;
+    // 未探索节点
     public unexplored: number = 0;
+    // 子节点
     public children: MctsNode[] = null;
     
     constructor(parent: MctsNode, isAITurn: boolean, move: number[]) {
@@ -17,6 +25,7 @@ export class MctsNode {
         this.move = move;
     }
 
+    // 获取最佳节点的移动点坐标
     public getBestMove(time: number = 0.5) {
         const now = new Date().getTime();
         while(new Date().getTime() - now < 1e3 * time) {
@@ -30,10 +39,12 @@ export class MctsNode {
         return node.move;
     }
 
+    // 获取全局棋盘
     public getGB() {
         return GlobalBoard.getInstance();
     }
 
+    // 创建子节点
     public createChildren() {
         let gb = this.getGB();
         let availablePos = gb.getAvailablePos(this.move);
@@ -60,11 +71,13 @@ export class MctsNode {
         }
     }
 
+    // 打乱数组顺序
     private _shuffle(arr: any[]) {
         for (let i = arr.length, j; i; i--, j = Math.floor(Math.random() * i), arr.length - 1, [arr[i], arr[j]] = [arr[j], arr[i]]);
         return arr;
     }
 
+    // 模拟胜负
     private _MCTSSimulate(node: MctsNode): State {
         let gb = this.getGB();
         let isAI = node.isAITurn;
@@ -81,6 +94,7 @@ export class MctsNode {
         return state;
     }
 
+    // 更新节点以及所有父节点信息
     private _updateInfo(node: MctsNode, state: State): void{
         let isAI = node.isAITurn;
         if (state === State.ai_win) {
@@ -99,6 +113,7 @@ export class MctsNode {
             node.parent._updateInfo(node.parent, state);
     }
 
+    // 获取每个节点的性价比
     private _getNodePotential(node: MctsNode) {
         // let w = node.isAITurn ? node.hits - node.misses : node.misses - node.hits;
         let w = node.hits - node.misses;
@@ -109,6 +124,7 @@ export class MctsNode {
     }
     
 
+    // 找到尝试次数最多的点，也是最佳点
     private _findMostTriedChild() {
         if (!this.children) 
             return null;

@@ -38,6 +38,9 @@ interface VirtualData {
 }
 
 export class LocalBoard {
+    /**
+     * @description 坐标值
+     */
     private id: number;
     private virtualData: VirtualData;
     constructor(id: number) {
@@ -50,10 +53,18 @@ export class LocalBoard {
         }
     }
     
+    /**
+     * @description 获取坐标值
+     */
     public getId() {
         return this.id;
     }
 
+    /**
+     * @description 单步下棋
+     * @param index 棋子id
+     * @param isAI 是否是AI
+     */
     public pushData(index: number, isAI: boolean) {
         let virtualData = this.virtualData;
         if (virtualData.data[index]) return; 
@@ -68,6 +79,9 @@ export class LocalBoard {
         return this.virtualData;
     }
 
+    /**
+     * @description 深克隆
+     */
     public deepCloneVirtualData() {
         return JSON.parse(JSON.stringify(this.virtualData));
     }
@@ -76,6 +90,10 @@ export class LocalBoard {
         this.virtualData = data;
     }
 
+    /**
+     * @description 获取棋盘的分数和状态
+     * @param data 棋盘数据
+     */
     private _getStateAndScore(data: number[]): {state: State, score: Score} {
         let state = State.active;
         let score = 0;
