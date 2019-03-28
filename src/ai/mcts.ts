@@ -20,12 +20,13 @@ export class MctsNode {
     public getBestMove(time: number = 0.5) {
         const now = new Date().getTime();
         while(new Date().getTime() - now < 1e3 * time) {
-            for (let i = 0; i < 2000; i++) {
+            for (let i = 0; i < 1000; i++) {
                 this.createChildren();
             }
             console.log((new Date().getTime() - now) / 1000);
         }
         let node = this._findMostTriedChild();
+        // console.log(this);
         return node.move;
     }
 
@@ -53,7 +54,9 @@ export class MctsNode {
         } else {
             this.children = this._shuffle(this.children).sort((c1, c2) => this._getNodePotential(c2) - this._getNodePotential(c1));
             let betterPotentialChild = this.children[0];
+            gb.pushData(betterPotentialChild.move, betterPotentialChild.isAITurn);
             betterPotentialChild.createChildren();
+            gb.deleteLastData();
         }
     }
 
@@ -86,10 +89,10 @@ export class MctsNode {
             else 
                 node.misses++;
         } else if (state === State.human_win) {
-            if (isAI)
-                node.misses++;
-            else 
+            if (!isAI)
                 node.hits++;
+            else 
+                node.misses++;
         }
         node.totaltrials++;
         if (node.parent) 
@@ -97,6 +100,7 @@ export class MctsNode {
     }
 
     private _getNodePotential(node: MctsNode) {
+        // let w = node.isAITurn ? node.hits - node.misses : node.misses - node.hits;
         let w = node.hits - node.misses;
         let n = node.totaltrials;
         let t = node.parent.totaltrials;
