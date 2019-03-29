@@ -95,10 +95,6 @@ export class MctsNode {
     private _MCTSSimulate(node: MctsNode, board: number[][], boardState: State[]): State {
         let isAI = node.isAITurn;
         let move = node.move;
-        if (!Array.isArray(move)) {
-            console.log(move);
-            debugger;
-        }
         let value = isAI ? Type.AI : Type.HUMAN;
         board[move[0]][move[1]] = value;
         boardState[move[0]] = this._getLocalBoardState(board[move[0]]);
@@ -152,7 +148,7 @@ export class MctsNode {
     _getAvailablePos(board: number[][], boardState: State[], move: number[]): number[][] {
         let availablePos: number[][] = [];
         let index = move[1];
-        if (boardState[index] === State.active) {
+        if (boardState[index] === State.active || boardState[index] === State.draw && board[index].find((b) => b !== Type.AI && b !== Type.HUMAN)) {
             board[index].forEach((n, i) => {
                 if (n !== Type.AI && n !== Type.HUMAN) {
                     availablePos.push([index, i]);
@@ -160,7 +156,7 @@ export class MctsNode {
             }) 
         } else {
             boardState.forEach((bs, i1) => {
-                if (bs === State.active) {
+                if (bs === State.active || boardState[index] === State.draw && board[i1].find((b) => b !== Type.AI && b !== Type.HUMAN)) {
                     board[i1].forEach((n, i2) => {
                         if (n !== Type.AI && n !== Type.HUMAN) {
                             availablePos.push([i1, i2]);
