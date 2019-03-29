@@ -1,5 +1,6 @@
 import { GlobalBoard } from '../common/globalboard';
-import { State } from '../common/localboard';
+import { State, Type } from '../common/localboard';
+import { sucArr } from '../common/localboard';
 
 export class MctsNode {
     // 父节点
@@ -18,24 +19,30 @@ export class MctsNode {
     public unexplored: number = 0;
     // 子节点
     public children: MctsNode[] = null;
-    
+    // 棋盘数据
+    private board: number[][]
+
     constructor(parent: MctsNode, isAITurn: boolean, move: number[]) {
         this.parent = parent;
         this.isAITurn = isAITurn;
         this.move = move;
+        this.board = this.getGB().getGlobalData().data;
     }
 
     // 获取最佳节点的移动点坐标
     public getBestMove(time: number = 0.5) {
         const now = new Date().getTime();
+        let boardState = this._getBoardState(this.board);
         while(new Date().getTime() - now < 1e3 * time) {
             for (let i = 0; i < 1000; i++) {
-                this.createChildren();
+                const now_ = new Date().getTime();
+                this.createChildren(this.board, boardState, this.move);
+                GlobalBoard.timeCount += (new Date().getTime() - now_) / 1000;
             }
+            console.log(`function MCTSSimulate spend time ${GlobalBoard.timeCount}`);
             console.log((new Date().getTime() - now) / 1000);
         }
         let node = this._findMostTriedChild();
-        // console.log(this);
         return node.move;
     }
 
@@ -45,9 +52,14 @@ export class MctsNode {
     }
 
     // 创建子节点
-    public createChildren() {
-        let gb = this.getGB();
-        let availablePos = gb.getAvailablePos(this.move);
+    public createChildren(board: number[][], boardState: State[], move: number[]) {
+        board = this._deepClone(board);
+        boardState = this._deepClone(boardState);
+        let state = this._getState(boardState);
+        if (state !== State.active) {
+            this._MCTSSimulate(this, board, boardState);
+        }
+        let availablePos = this._getAvailablePos(board, boardState, move);
         if (!this.children) {
             this.children = [];
             for (let pos of availablePos) {
@@ -60,14 +72,16 @@ export class MctsNode {
             this.unexplored--;
             let unexploredChildren = this._shuffle(this.children.filter((node) => node.totaltrials === 0));
             let node = unexploredChildren[0];
-            let state = this._MCTSSimulate(node);
+            let state = this._MCTSSimulate(node, board, boardState);
             this._updateInfo(node, state)
         } else {
             this.children = this._shuffle(this.children).sort((c1, c2) => this._getNodePotential(c2) - this._getNodePotential(c1));
             let betterPotentialChild = this.children[0];
-            gb.pushData(betterPotentialChild.move, betterPotentialChild.isAITurn);
-            betterPotentialChild.createChildren();
-            gb.deleteLastData();
+            let move = betterPotentialChild.move;
+            let value = betterPotentialChild.isAITurn ? Type.AI : Type.HUMAN;
+            board[move[0]][move[1]] = value;
+            boardState[move[0]] = this._getLocalBoardState(board[move[0]]);
+            betterPotentialChild.createChildren(board, boardState, move);
         }
     }
 
@@ -78,19 +92,23 @@ export class MctsNode {
     }
 
     // 模拟胜负
-    private _MCTSSimulate(node: MctsNode): State {
-        let gb = this.getGB();
+    private _MCTSSimulate(node: MctsNode, board: number[][], boardState: State[]): State {
         let isAI = node.isAITurn;
         let move = node.move;
-        gb.pushData(move, isAI);
-        let state = gb.getState();
-        if (gb.getState() === State.active) {
-            let availablePos = gb.getAvailablePos(move);
+        if (!Array.isArray(move)) {
+            console.log(move);
+            debugger;
+        }
+        let value = isAI ? Type.AI : Type.HUMAN;
+        board[move[0]][move[1]] = value;
+        boardState[move[0]] = this._getLocalBoardState(board[move[0]]);
+        let state = this._getState(boardState);
+        if (state === State.active) {
+            let availablePos = this._getAvailablePos(board, boardState, move);
             let pos = this._shuffle(availablePos)[0];
             let newNode = new MctsNode(node, !isAI, pos);
-            state = this._MCTSSimulate(newNode);
+            return this._MCTSSimulate(newNode, board, boardState);
         }
-        gb.deleteLastData();
         return state;
     }
 
@@ -115,7 +133,6 @@ export class MctsNode {
 
     // 获取每个节点的性价比
     private _getNodePotential(node: MctsNode) {
-        // let w = node.isAITurn ? node.hits - node.misses : node.misses - node.hits;
         let w = node.hits - node.misses;
         let n = node.totaltrials;
         let t = node.parent.totaltrials;
@@ -130,5 +147,76 @@ export class MctsNode {
             return null;
         else 
             return this.children.sort((c1, c2) => c2.totaltrials - c1.totaltrials)[0];
+    }
+
+    _getAvailablePos(board: number[][], boardState: State[], move: number[]): number[][] {
+        let availablePos: number[][] = [];
+        let index = move[1];
+        if (boardState[index] === State.active) {
+            board[index].forEach((n, i) => {
+                if (n !== Type.AI && n !== Type.HUMAN) {
+                    availablePos.push([index, i]);
+                }
+            }) 
+        } else {
+            boardState.forEach((bs, i1) => {
+                if (bs === State.active) {
+                    board[i1].forEach((n, i2) => {
+                        if (n !== Type.AI && n !== Type.HUMAN) {
+                            availablePos.push([i1, i2]);
+                        }
+                    }) 
+                }
+            })
+        }
+        return availablePos;
+    }
+
+    _getLocalBoardState(localboard: number[]) {
+        let draw = true;
+        for (let s of sucArr) {
+            let b1 = localboard[s[0]];
+            let b2 = localboard[s[1]];
+            let b3 = localboard[s[2]];
+            if (b1 === b2 && b2 === b3) {
+                if (b1 === Type.AI) {
+                    return State.ai_win;
+                } else if (b1 === Type.HUMAN) {
+                    return State.human_win;
+                }
+            }
+            if (![b1, b2, b3].includes(Type.AI) || ![b1, b2, b3].includes(Type.HUMAN)) {
+                draw = false;
+            }
+        }
+        return draw ? State.draw : State.active;
+    }
+
+    _getBoardState(board: number[][]): State[] {
+        return board.map(b => this._getLocalBoardState(b));
+    }
+
+    _getState(boardState: State[]): State {
+        let draw = true;
+        for (let s of sucArr) {
+            let b1 = boardState[s[0]];
+            let b2 = boardState[s[1]];
+            let b3 = boardState[s[2]];
+            if (b1 === b2 && b2 === b3) {
+                if (b1 === State.ai_win) {
+                    return State.ai_win;
+                } else if (b1 === State.human_win) {
+                    return State.human_win;
+                }
+            }
+            if (!([b1, b2, b3].includes(State.ai_win) && [b1, b2, b3].includes(State.human_win) || [b1, b2, b3].includes(State.draw))) {
+                draw = false;
+            }
+        }
+        return draw ? State.draw : State.active;
+    }
+
+    _deepClone(origin: any) {
+        return JSON.parse(JSON.stringify(origin));
     }
 }

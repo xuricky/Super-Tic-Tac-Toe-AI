@@ -20,7 +20,9 @@ export enum Score {
 
 export enum Type {
     AI = 1,
-    HUMAN = -1
+    HUMAN = -1,
+    BACKAI = 2,
+    BACKHUMAN = -2,
 }
 
 export enum State {

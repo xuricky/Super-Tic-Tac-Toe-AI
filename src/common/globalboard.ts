@@ -1,4 +1,5 @@
 import { LocalBoard, sucArr, Score, Type, State } from './localboard';
+import { SquareState } from '../components/square';
 
 export enum GlobalScore {
     ai_win = Number.MAX_SAFE_INTEGER,
@@ -12,6 +13,7 @@ interface GlobalData {
     AIIsNext: boolean,
     data: number[][],
     masks: boolean[];
+    lastMove: number[];
 }
 
 export class GlobalBoard {
@@ -19,12 +21,15 @@ export class GlobalBoard {
     static getInstance() {
         return this.INSTANCE;
     }
+    static timeCount: number = 0;
     private multiple: number = 2;
     private global: LocalBoard[];
     private historyData: any[];
     private globalData: GlobalData;
     private score: GlobalScore;
     private state: State;
+    private utttState: SquareState[][];
+    private backMove: number[];
     constructor() {
         this.clearData();
     }
@@ -46,11 +51,14 @@ export class GlobalBoard {
         this.globalData = {
             AIIsNext: false,
             data,
-            masks: Array(9).fill(true)
+            masks: Array(9).fill(true),
+            lastMove: null,
         };
         this.historyData = [];
+        this.backMove = null;
         this.score = null;
         this.state = null;
+        this.utttState = this._transferGlobalToUtttState();
     }
 
     public initStartData() {
@@ -64,6 +72,10 @@ export class GlobalBoard {
 
     public getGlobalData() {
         return this.globalData;
+    }
+
+    public getUtttState() {
+        return this.utttState;
     }
 
     public setGlobalData(globalData: GlobalData) {
@@ -97,11 +109,17 @@ export class GlobalBoard {
         this.stashHistoryData();
         this.global[id[0]].pushData(id[1], isAI);
         this.globalData.AIIsNext = !this.globalData.AIIsNext;
+        this.globalData.lastMove = id;
         this._transferGlobalToGlobalData();
         this._handleNextStepData(id);
         let res = this.getStateAndScore();
         this.score = res.score;
         this.state = res.state;
+        if (this.backMove) {
+            this.globalData.data[this.backMove[0]][this.backMove[1]] = null;
+            this.backMove = null;
+        }
+        this.utttState = this._transferGlobalToUtttState();
         // console.log(this.getStateAndScore().score);
         // console.log(this.getAvailablePos(id));
     }
@@ -138,9 +156,11 @@ export class GlobalBoard {
                 let local = this.global[i];
                 local.setVirtualData(leftDatas[0].global[i]);
             }
+            this.backMove = leftDatas.length > 1 ? leftDatas[1].globalData.lastMove : this.globalData.lastMove;
             this.setGlobalData(leftDatas[0].globalData);
             this.score = leftDatas[0].score;
             this.state = leftDatas[0].state;
+            this.utttState = this._transferGlobalToUtttState();
         }
     }
 
@@ -211,5 +231,24 @@ export class GlobalBoard {
             }
         }
         return availablePos;
+    }
+
+    _transferGlobalToUtttState() {
+        let data = this.globalData.data;
+        let utttState: SquareState[][] = [];
+        for (let _data of data) {
+            let states = _data.map((d) => {
+                return d === Type.AI ? SquareState.AI : d === Type.HUMAN ? SquareState.Human : SquareState.default;
+            });
+            utttState.push(states);
+        }
+        if (this.globalData.lastMove) {
+            utttState[this.globalData.lastMove[0]][this.globalData.lastMove[1]] = SquareState.lastMove;
+        }
+        if (this.backMove) {
+            utttState[this.backMove[0]][this.backMove[1]] = SquareState.back;
+            // data[this.backMove[0]][this.backMove[1]] = this.globalData.AIIsNext ? Type.BACKAI : Type.BACKHUMAN;
+        }
+        return utttState;
     }
 }

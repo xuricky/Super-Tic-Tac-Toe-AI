@@ -2,11 +2,17 @@ import * as React from 'react';
 import { Interface } from 'readline';
 const GameInfoCss = require('../ui/css/gameinfo.css');
 
+export enum Model {
+    HUMAN_AI,
+    HUMAN_HUMAN
+}
 export interface GameInfoProps {
     handleGameStart(): void;
     handleGameOver(): void;
     handleBack(): void;
+    changeModel(): void;
     gameStart: boolean;
+    ModelIsHumanVsAi: boolean;
 }
 
 export class GameInfo extends React.Component<GameInfoProps> {
@@ -22,6 +28,10 @@ export class GameInfo extends React.Component<GameInfoProps> {
                 </button>
                 <button onClick={this.props.handleBack}>
                     悔棋
+                </button>
+                <button onClick={this.props.changeModel}
+                        disabled={!this.props.gameStart}>
+                    {this.props.ModelIsHumanVsAi ? '人机' : '人人'}
                 </button>
             </div>
         )
