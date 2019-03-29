@@ -39,7 +39,6 @@ export class MctsNode {
                 this.createChildren(this.board, boardState, this.move);
                 GlobalBoard.timeCount += (new Date().getTime() - now_) / 1000;
             }
-            console.log(`function MCTSSimulate spend time ${GlobalBoard.timeCount}`);
             console.log((new Date().getTime() - now) / 1000);
         }
         let node = this._findMostTriedChild();
@@ -68,6 +67,8 @@ export class MctsNode {
             }
             this.unexplored = this.children.length;
         }
+        // 临时解决报错
+        if (this.children.length === 0) return;
         if (this.unexplored > 0) {
             this.unexplored--;
             let unexploredChildren = this._shuffle(this.children.filter((node) => node.totaltrials === 0));
@@ -101,6 +102,8 @@ export class MctsNode {
         let state = this._getState(boardState);
         if (state === State.active) {
             let availablePos = this._getAvailablePos(board, boardState, move);
+            // 临时解决报错
+            if (availablePos.length === 0) return state;
             let pos = this._shuffle(availablePos)[0];
             let newNode = new MctsNode(node, !isAI, pos);
             return this._MCTSSimulate(newNode, board, boardState);

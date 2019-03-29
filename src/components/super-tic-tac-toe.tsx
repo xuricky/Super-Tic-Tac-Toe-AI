@@ -20,6 +20,7 @@ interface SuperTicTacToeState{
     ModelIsHumanVsAi: boolean;
     lastMove: number[];
     update: boolean;
+    winner: State
 }
 
 export class SuperTicTacToe extends React.Component<SuperTicTacToeProps, SuperTicTacToeState> {
@@ -38,6 +39,7 @@ export class SuperTicTacToe extends React.Component<SuperTicTacToeProps, SuperTi
             ModelIsHumanVsAi: true,
             lastMove: [-1, -1],
             update: false,
+            winner: null,
         }
     }
 
@@ -68,7 +70,8 @@ export class SuperTicTacToe extends React.Component<SuperTicTacToeProps, SuperTi
                           handleBack={() => this._handleBack()}
                           changeModel = {() => this._changeModel()}
                           gameStart={this.state.gameStart}
-                          ModelIsHumanVsAi={this.state.ModelIsHumanVsAi}></GameInfo>    
+                          ModelIsHumanVsAi={this.state.ModelIsHumanVsAi}
+                          winner={this.state.winner}></GameInfo>    
             </div>
         )
     }
@@ -128,6 +131,7 @@ export class SuperTicTacToe extends React.Component<SuperTicTacToeProps, SuperTi
         this.setState({
             gb: this.gb,
             gameStart: !this.state.gameStart,
+            winner: null,
         });
     }
 
@@ -153,18 +157,19 @@ export class SuperTicTacToe extends React.Component<SuperTicTacToeProps, SuperTi
     componentDidUpdate() {
         let gb = this.state.gb;
         let AITurn = gb.getGlobalData().AIIsNext;
-        let state_ = gb.getState();
-        if (!this.state.endGame && state_ !== null && state_ !== State.active) {
-            alert(`Game over,${state_ === State.ai_win ? 'AI WIN!' : state_ === State.human_win ? 'HUMEN WIN!' : '平局！'}`);
-            this.setState({
-                endGame: true,
-            });
-        }
         setTimeout(() => {
             if (this.state.ModelIsHumanVsAi && AITurn) {
                 let mcts = new MctsNode(null, !AITurn, this.state.lastMove);
                 let move = mcts.getBestMove();
                 this._handleClick(move, !AITurn);
+            }
+            let state_ = gb.getState();
+            if (!this.state.endGame && state_ !== null && state_ !== State.active) {
+                // alert(`Game over,${state_ === State.ai_win ? 'AI WIN!' : state_ === State.human_win ? 'HUMEN WIN!' : '平局！'}`);
+                this.setState({
+                    endGame: true,
+                    winner: state_,
+                });
             }
         }, 0);
     }
