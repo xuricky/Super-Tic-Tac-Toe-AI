@@ -160,11 +160,13 @@ export class SuperTicTacToe extends React.Component<SuperTicTacToeProps, SuperTi
                 endGame: true,
             });
         }
-        if (this.state.ModelIsHumanVsAi && AITurn) {
-            let mcts = new MctsNode(null, !AITurn, this.state.lastMove);
-            let move = mcts.getBestMove();
-            this._handleClick(move, !AITurn);
-        }
+        setTimeout(() => {
+            if (this.state.ModelIsHumanVsAi && AITurn) {
+                let mcts = new MctsNode(null, !AITurn, this.state.lastMove);
+                let move = mcts.getBestMove();
+                this._handleClick(move, !AITurn);
+            }
+        }, 0);
     }
 }
 
