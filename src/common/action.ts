@@ -14,7 +14,7 @@ interface UIData {
     premasks: boolean[];
 }
 
-interface historyData {
+export interface HistoryData {
     actionData: ActionData,
     uiData: UIData,
 }
@@ -45,7 +45,7 @@ export class Action {
     /**
      * @description 历史数据
      */
-    private historyDatas: historyData[];
+    private historyDatas: HistoryData[];
      /**
      * @description UI数据
      */
@@ -157,10 +157,6 @@ export class Action {
     public pushActionData(data: number[]) {
         let actionData = this.getActionData();
         let uiData = this.getUIData();
-        this.historyDatas.push({
-            actionData: this._deepCloneActionData(actionData),
-            uiData: this._deepCloneActionData(uiData)
-        });
         let value = this.getNextValue();
         this.changeValueFromID(uiData.squareTexts, data, value);
         if (actionData.xIsNext) {
@@ -172,6 +168,10 @@ export class Action {
         actionData.allData.push(data);
         this._transferActionDataToUIData(actionData);
         this._handleNextStepData(data);
+        this.historyDatas.push({
+            actionData: this._deepCloneActionData(actionData),
+            uiData: this._deepCloneActionData(uiData)
+        });
     }
 
     /**
@@ -190,13 +190,14 @@ export class Action {
      * @description 悔棋，返回第step步
      * @param step 步数
      */
-    public resetActionData(step: number) {
-        let len = this.historyDatas.length;
-        if (len <= 0) {
+    public resetActionData(step: number, outerHistoryDatas?: HistoryData[]) {
+        let historyDatas = this._deepCloneActionData(outerHistoryDatas) || this.historyDatas;
+        let len = historyDatas.length;
+        if (len <= 0 || step <= 0) {
             this._initData();
         }
         else if (step < len) {
-            let leftDatas = this.historyDatas.splice(step, len);
+            let leftDatas = historyDatas.splice(step - 1, len);
             this.actionData = leftDatas[0].actionData;
             this.uiData = leftDatas[0].uiData;
         }
